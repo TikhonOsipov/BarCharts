@@ -11,9 +11,9 @@
         android:layout_height="250dp">
 
         <com.tixon.barchart.BarChart
-            android:background="#cccccc"
+            tools:background="#cccccc"
             android:id="@+id/chart"
-            tools:background="@android:color/transparent"
+            android:background="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="250dp" />
 

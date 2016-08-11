@@ -33,6 +33,7 @@ public class FragmentChart extends Fragment {
         int position = args.getInt("position", 0);
         Log.d("myLogs", getClass().getSimpleName() + ": position: " + position);
         binding.text.setText(String.valueOf(position));
+        binding.chart.draw(position);
         return binding.getRoot();
     }
 }

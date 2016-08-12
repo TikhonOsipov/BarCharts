@@ -11,6 +11,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,6 +42,20 @@ public class BarChart extends ImageView {
     private float spaceBetweenBars;
     private float spaceAtSidesOfBar;
     private float maxBarHeight;
+
+    private int barCount = 0;
+    private int pageNumber = 0;
+
+    /**
+     * Data to be shown on the chart
+     */
+    private List<Account> accounts;
+
+    /**
+     * Heights of bars that are calculated in
+     * @see #calculateHeights()
+     */
+    private List<Float> heights = new ArrayList<>();
 
     Paint p = new Paint();
     Paint linePaint = new Paint();
@@ -77,7 +92,7 @@ public class BarChart extends ImageView {
     }
 
     /**
-     * Draws bottom line of graph
+     * Draws bottom line of the chart
      */
     private void drawLine(Canvas canvas) {
         int bottomY = getHeight() - 2;
@@ -87,15 +102,16 @@ public class BarChart extends ImageView {
         canvas.drawLine(startX, bottomY, stopX, bottomY, linePaint);
     }
 
-    private int barCount = 0;
-    private int pageNumber = 0;
-
-    private List<Account> accounts;
-
     public void setAccounts(List<Account> accounts) {
         this.accounts = accounts;
     }
 
+    /**
+     * Calculates bar count on concrete page
+     * @param accountsSize Size of Accounts list
+     * @param pageNumber Number of page
+     * @return Bar count on concrete page
+     */
     private int calculateBarCountOnPage(int accountsSize, int pageNumber) {
         int barCount = accountsSize - pageNumber * 4;
         if(barCount > 4) {
@@ -104,26 +120,41 @@ public class BarChart extends ImageView {
         return barCount;
     }
 
+    /**
+     * Calculates index in Accounts list using page number and bar number on this page
+     * @param localIndex Bar number on selected page
+     * @return Index in Accounts list
+     */
     private int calculateGlobalIndex(int localIndex) {
         return pageNumber * 4 + localIndex;
     }
 
+    /**
+     * Sets page number, bar quantity to be shown at this page and calls onDraw() method
+     * @param pageNumber Number of page
+     */
     public void draw(int pageNumber) {
         this.pageNumber = pageNumber;
         this.barCount = calculateBarCountOnPage(accounts.size(), pageNumber);
         invalidate();
     }
 
+    /**
+     * Draws bars using calculated widths and heights
+     */
     private void drawBars(Canvas canvas) {
         calculateWidths(barCount);
+        calculateHeights();
         float initWidth = spaceAtSidesOfBar;
         int bottomY = getHeight() - 2;
         for(int i = 0; i < barCount; i++) {
-            rectF.set(initWidth, bottomY - maxBarHeight, initWidth + barWidth, bottomY);
-
             int globalIndex = calculateGlobalIndex(i);
             String title = accounts.get(globalIndex).getName();
             String balance = accounts.get(globalIndex).getBalance();
+
+            float barHeight = heights.get(globalIndex);
+
+            rectF.set(initWidth, bottomY - barHeight, initWidth + barWidth, bottomY);
 
             float titleWidth = titlePaint.measureText(title);
             float valueWidth = valuePaint.measureText(balance);
@@ -140,6 +171,9 @@ public class BarChart extends ImageView {
         }
     }
 
+    /**
+     * Sets up paints, typefaces and other stuff for drawing
+     */
     private void init() {
         int whiteColor = Color.parseColor("#ffffff");
 
@@ -157,16 +191,23 @@ public class BarChart extends ImageView {
         Typeface robotoLight = Typeface.createFromAsset(getContext().getAssets(), ROBOTO_LIGHT_PATH);
         titlePaint = new Paint();
         titlePaint.setAntiAlias(true);
+        titlePaint.setTypeface(robotoLight);
         titlePaint.setColor(whiteColor);
         titlePaint.setTextSize(Utils.dpToPx(9.0f, getContext()));
 
         Typeface robotoRegular = Typeface.createFromAsset(getContext().getAssets(), ROBOTO_REGULAR_PATH);
         valuePaint = new Paint();
         valuePaint.setAntiAlias(true);
+        valuePaint.setTypeface(robotoRegular);
         valuePaint.setColor(whiteColor);
         valuePaint.setTextSize(Utils.dpToPx(11.0f, getContext()));
     }
 
+    /**
+     * Calculates widths of bars, spaces between bars and side spaces of edge bars.
+     * Width depends on bar quantity that is shown on the chart.
+     * @param barCount Bar quantity that is shown on the chart
+     */
     private void calculateWidths(int barCount) {
         int width = getWidth();
         int height = getHeight();
@@ -193,5 +234,66 @@ public class BarChart extends ImageView {
             default: break;
         }
         maxBarHeight = height / HEIGHT_TO_MAX_BAR_HEIGHT;
+    }
+
+    /**
+     * Calculates heights for each bar to be drawn on chart.
+     * Adds calculated height for each bar in heights ArrayList< Float>
+     */
+    private void calculateHeights() {
+        int minValue = findMinValue();
+        int maxValue = findMaxValue();
+        for(int i = 0; i < accounts.size(); i++) {
+            int value = accounts.get(i).getValue();
+            float height = calculateHeight(value, minValue, maxValue);
+            heights.add(height);
+        }
+    }
+
+    /**
+     * Calculates height of single bar in pixels depending on balance of account.
+     * Uses Lagrange linear interpolation (n = 1)
+     * @param value Balance of account
+     * @param minValue Minimal balance in accounts list
+     * @param maxValue Maximal balance in accounts list
+     * @return height of single bar
+     */
+    private float calculateHeight(int value, int minValue, int maxValue) {
+        float minBarHeight = maxBarHeight / 4.0f;
+        float firstFraction = ((float)(value - maxValue)) / ((float)(minValue - maxValue));
+        float secondFraction = ((float)(value - minValue)) / ((float)(maxValue - minValue));
+        return minBarHeight * firstFraction + maxBarHeight * secondFraction;
+    }
+
+    /**
+     * Finds minimal balance in accounts list
+     * @return minimal balance
+     */
+    private int findMinValue() {
+        int minValue = accounts.get(0).getValue();
+        if(accounts.size() > 1) {
+            for(int i = 1; i < accounts.size(); i++) {
+                if(accounts.get(i).getValue() <= minValue) {
+                    minValue = accounts.get(i).getValue();
+                }
+            }
+        }
+        return minValue;
+    }
+
+    /**
+     * Finds maximal balance in accounts list
+     * @return maximal balance
+     */
+    private int findMaxValue() {
+        int maxValue = accounts.get(0).getValue();
+        if(accounts.size() > 1) {
+            for(int i = 1; i < accounts.size(); i++) {
+                if(accounts.get(i).getValue() >= maxValue) {
+                    maxValue = accounts.get(i).getValue();
+                }
+            }
+        }
+        return maxValue;
     }
 }

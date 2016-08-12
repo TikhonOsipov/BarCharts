@@ -10,9 +10,9 @@ import java.util.List;
  * Created by tikhon.osipov on 12.08.2016
  */
 public class App extends Application {
-    private List<Account> accounts = new ArrayList<>();
+    private List<MoneyKeeper> accounts = new ArrayList<>();
 
-    public List<Account> getAccounts() {
+    public List<MoneyKeeper> getAccounts() {
         return accounts;
     }
 
@@ -30,5 +30,6 @@ public class App extends Application {
         accounts.add(new Account(900, "900 €", "Account 5"));
         accounts.add(new Account(1000, "1 000 €", "Account 6"));
         accounts.add(new Account(600, "600 €", "Account 7"));
+        accounts.add(new Card(800, 500, "800 € / 500 €", "Card 1"));
     }
 }

@@ -49,13 +49,17 @@ public class BarChart extends ImageView {
     /**
      * Data to be shown on the chart
      */
-    private List<Account> accounts;
+    private List<MoneyKeeper> accounts;
 
     /**
      * Heights of bars that are calculated in
-     * @see #calculateHeights()
+     * @see #calculateHeightsOfBars()
      */
     private List<Float> heights = new ArrayList<>();
+
+    public void setAccounts(List<MoneyKeeper> accounts) {
+        this.accounts = accounts;
+    }
 
     Paint p = new Paint();
     Paint linePaint = new Paint();
@@ -79,6 +83,7 @@ public class BarChart extends ImageView {
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @SuppressWarnings("unused")
     public BarChart(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
@@ -100,10 +105,6 @@ public class BarChart extends ImageView {
         int startX = 0;
         int stopX = getWidth();
         canvas.drawLine(startX, bottomY, stopX, bottomY, linePaint);
-    }
-
-    public void setAccounts(List<Account> accounts) {
-        this.accounts = accounts;
     }
 
     /**
@@ -144,7 +145,7 @@ public class BarChart extends ImageView {
      */
     private void drawBars(Canvas canvas) {
         calculateWidths(barCount);
-        calculateHeights();
+        calculateHeightsOfBars();
         float initWidth = spaceAtSidesOfBar;
         int bottomY = getHeight() - 2;
         for(int i = 0; i < barCount; i++) {
@@ -165,9 +166,16 @@ public class BarChart extends ImageView {
             canvas.drawText(title, titleStartX, 150, titlePaint);
             canvas.drawText(balance, valueStartX, 190, valuePaint);
 
+            canvas.drawRect(rectF, p);
+
+            /*if(accounts.get(i)) {
+                float totalHeight = (barHeight * ((Card) accounts.get(i)).getMaxValue()) / accounts.get(i).getValue();
+                rectF.set(initWidth, bottomY - totalHeight, initWidth + barWidth, bottomY);
+                canvas.drawRect(rectF, linePaint);
+            }*/
+
             initWidth += barWidth;
             initWidth += spaceBetweenBars;
-            canvas.drawRect(rectF, p);
         }
     }
 
@@ -240,12 +248,12 @@ public class BarChart extends ImageView {
      * Calculates heights for each bar to be drawn on chart.
      * Adds calculated height for each bar in heights ArrayList< Float>
      */
-    private void calculateHeights() {
+    private void calculateHeightsOfBars() {
         int minValue = findMinValue();
         int maxValue = findMaxValue();
         for(int i = 0; i < accounts.size(); i++) {
             int value = accounts.get(i).getValue();
-            float height = calculateHeight(value, minValue, maxValue);
+            float height = calculateHeightOfBar(value, minValue, maxValue);
             heights.add(height);
         }
     }
@@ -258,7 +266,7 @@ public class BarChart extends ImageView {
      * @param maxValue Maximal balance in accounts list
      * @return height of single bar
      */
-    private float calculateHeight(int value, int minValue, int maxValue) {
+    private float calculateHeightOfBar(int value, int minValue, int maxValue) {
         float minBarHeight = maxBarHeight / 4.0f;
         float firstFraction = ((float)(value - maxValue)) / ((float)(minValue - maxValue));
         float secondFraction = ((float)(value - minValue)) / ((float)(maxValue - minValue));

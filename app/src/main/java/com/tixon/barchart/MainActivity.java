@@ -1,10 +1,9 @@
 package com.tixon.barchart;
 
 import android.databinding.DataBindingUtil;
+import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 
 import com.tixon.barchart.databinding.ActivityMainBinding;
 
@@ -16,7 +15,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(MainActivity.this, R.layout.activity_main);
 
-        PagerAdapter adapter = new PagerAdapter(getFragmentManager());
+        int pageCount = calculatePageCount(App.get(this).getAccounts().size());
+        PagerAdapter adapter = new PagerAdapter(getFragmentManager(), pageCount);
 
         binding.viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                Log.d("myLogs", MainActivity.class.getSimpleName() + ": position = " + position);
+
             }
 
             @Override
@@ -36,5 +36,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.viewPager.setAdapter(adapter);
+    }
+
+    private int calculatePageCount(int accountsSize) {
+        if(accountsSize % 4 == 0) {
+            return accountsSize/4;
+        }
+        return accountsSize/4+1;
     }
 }

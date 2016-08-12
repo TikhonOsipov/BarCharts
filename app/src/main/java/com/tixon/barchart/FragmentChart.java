@@ -31,8 +31,10 @@ public class FragmentChart extends Fragment {
         binding = DataBindingUtil.inflate(inflater, R.layout.chart_fragment, container, false);
         Bundle args = getArguments();
         int position = args.getInt("position", 0);
+
         Log.d("myLogs", getClass().getSimpleName() + ": position: " + position);
         binding.text.setText(String.valueOf(position));
+        binding.chart.setAccounts(App.get(getActivity()).getAccounts());
         binding.chart.draw(position);
         return binding.getRoot();
     }

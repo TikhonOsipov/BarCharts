@@ -8,10 +8,13 @@ import android.support.v13.app.FragmentStatePagerAdapter;
  * Created by tikhon.osipov on 11.08.2016
  */
 public class PagerAdapter extends FragmentStatePagerAdapter {
-    private static final int PAGE_COUNT = 3;
+    private static final int PAGE_COUNT = 4;
 
-    public PagerAdapter(FragmentManager fm) {
+    private int pageCount;
+
+    public PagerAdapter(FragmentManager fm, int pageCount) {
         super(fm);
+        this.pageCount = pageCount;
     }
 
     @Override
@@ -21,6 +24,6 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        return PAGE_COUNT;
+        return pageCount;
     }
 }

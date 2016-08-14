@@ -3,19 +3,19 @@ package com.tixon.barchart;
 /**
  * Created by tikhon.osipov on 12.08.2016
  */
-public class Card extends Account implements MoneyKeeper {
-    private int maxValue;
+public class Card extends BaseAccount {
+    private int remainedValue;
 
-    public Card(int value, int maxValue, String balance, String name) {
+    public Card(int value, int remainedValue, String balance, String name) {
         super(value, balance, name);
-        this.maxValue = maxValue;
+        this.remainedValue = remainedValue;
     }
 
-    public int getMaxValue() {
-        return maxValue;
+    public int getRemainedValue() {
+        return remainedValue;
     }
 
-    public void setMaxValue(int maxValue) {
-        this.maxValue = maxValue;
+    public void setRemainedValue(int remainedValue) {
+        this.remainedValue = remainedValue;
     }
 }

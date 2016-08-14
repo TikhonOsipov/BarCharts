@@ -49,7 +49,7 @@ public class BarChart extends ImageView {
     /**
      * Data to be shown on the chart
      */
-    private List<MoneyKeeper> accounts;
+    private List<BaseAccount> accounts;
 
     /**
      * Heights of bars that are calculated in
@@ -57,7 +57,7 @@ public class BarChart extends ImageView {
      */
     private List<Float> heights = new ArrayList<>();
 
-    public void setAccounts(List<MoneyKeeper> accounts) {
+    public void setAccounts(List<BaseAccount> accounts) {
         this.accounts = accounts;
     }
 
@@ -166,10 +166,19 @@ public class BarChart extends ImageView {
             canvas.drawText(title, titleStartX, 150, titlePaint);
             canvas.drawText(balance, valueStartX, 190, valuePaint);
 
-            canvas.drawRect(rectF, p);
+            if(accounts.get(globalIndex) instanceof Card) {
+                canvas.drawRect(rectF, linePaint);
+                float remainedValue = (float) ((Card) accounts.get(globalIndex)).getRemainedValue();
+                float totalValue = (float) accounts.get(globalIndex).getValue();
+                float remainedHeight = barHeight * remainedValue / totalValue;
+                rectF.set(initWidth, bottomY - remainedHeight, initWidth + barWidth, bottomY);
+                canvas.drawRect(rectF, p);
+            } else if(accounts.get(globalIndex) instanceof Account) {
+                canvas.drawRect(rectF, p);
+            }
 
             /*if(accounts.get(i)) {
-                float totalHeight = (barHeight * ((Card) accounts.get(i)).getMaxValue()) / accounts.get(i).getValue();
+                float totalHeight = (barHeight * ((Card) accounts.get(i)).getRemainedValue()) / accounts.get(i).getValue();
                 rectF.set(initWidth, bottomY - totalHeight, initWidth + barWidth, bottomY);
                 canvas.drawRect(rectF, linePaint);
             }*/

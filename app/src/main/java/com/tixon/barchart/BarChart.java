@@ -19,6 +19,7 @@ import java.util.List;
  */
 public class BarChart extends ImageView {
     private static final float WIDTH = 360.0f;
+    private static final float HEIGHT = 160.0f;
 
     private static final float WIDTH_TO_BAR_WIDTH_4 = WIDTH/64.0f;
     private static final float WIDTH_TO_BAR_WIDTH_3 = WIDTH/75.0f;
@@ -35,6 +36,9 @@ public class BarChart extends ImageView {
     private static final float WIDTH_TO_SPACE_SIDE_1 = WIDTH/138.0f;
 
     private static final float HEIGHT_TO_MAX_BAR_HEIGHT = 1.9f;
+    private static final float HEIGHT_TO_SPACE_BETWEEN_VALUE_TEXT_VIEW = HEIGHT/16.0f;
+    private static final float HEIGHT_TO_SPACE_BETWEEN_TITLE_TEXT_VIEW = HEIGHT/13.0f;
+
     private static final String ROBOTO_LIGHT_PATH = "fonts/roboto_light.ttf";
     private static final String ROBOTO_REGULAR_PATH = "fonts/roboto_regular.ttf";
 
@@ -163,14 +167,17 @@ public class BarChart extends ImageView {
             float titleStartX = initWidth + barWidth/2.0f - titleWidth/2.0f;
             float valueStartX = initWidth + barWidth/2.0f - valueWidth/2.0f;
 
-            canvas.drawText(title, titleStartX, 150, titlePaint);
-            canvas.drawText(balance, valueStartX, 190, valuePaint);
+            float valueStartY = bottomY - (maxBarHeight + getHeight()/HEIGHT_TO_SPACE_BETWEEN_VALUE_TEXT_VIEW);
+            float titleStartY = bottomY - (maxBarHeight + getHeight()/ HEIGHT_TO_SPACE_BETWEEN_TITLE_TEXT_VIEW + 2 * getHeight()/HEIGHT_TO_SPACE_BETWEEN_VALUE_TEXT_VIEW);
+            canvas.drawText(title, titleStartX, titleStartY, titlePaint);
+            canvas.drawText(balance, valueStartX, valueStartY, valuePaint);
 
             if(accounts.get(globalIndex) instanceof Card) {
                 canvas.drawRect(rectF, linePaint);
                 float remainedValue = (float) ((Card) accounts.get(globalIndex)).getRemainedValue();
                 float totalValue = (float) accounts.get(globalIndex).getValue();
                 float remainedHeight = barHeight * remainedValue / totalValue;
+                //float remainedHeight = calculateHeightOfBar((int)remainedValue, findMinValue(), findMaxValue());
                 rectF.set(initWidth, bottomY - remainedHeight, initWidth + barWidth, bottomY);
                 canvas.drawRect(rectF, p);
             } else if(accounts.get(globalIndex) instanceof Account) {
@@ -269,7 +276,7 @@ public class BarChart extends ImageView {
 
     /**
      * Calculates height of single bar in pixels depending on balance of account.
-     * Uses Lagrange linear interpolation (n = 1)
+     * Uses linear interpolation (n = 1)
      * @param value Balance of account
      * @param minValue Minimal balance in accounts list
      * @param maxValue Maximal balance in accounts list
@@ -312,5 +319,45 @@ public class BarChart extends ImageView {
             }
         }
         return maxValue;
+    }
+
+    public int getClickedIndex(float x) {
+        float[] startPositions = calculateStartPositions(barCount);
+        int clickedIndex = 0;
+        for(int i = 0; i < startPositions.length; i++) {
+            if(startPositions[i] > x) {
+                return calculateGlobalIndex(i-1);
+            }
+            if((i == startPositions.length - 1) && (startPositions[i] < x)) {
+                return calculateGlobalIndex(i);
+            }
+        }
+        return calculateGlobalIndex(clickedIndex);
+    }
+
+    private float[] calculateStartPositions(int barCount) {
+        float[] startPositions = new float[barCount];
+        switch (barCount) {
+            case 4:
+                startPositions[0] = 0;
+                startPositions[1] = spaceAtSidesOfBar + barWidth + spaceBetweenBars/2 + 1;
+                startPositions[2] = startPositions[1] + spaceBetweenBars + barWidth;
+                startPositions[3] = startPositions[2] + spaceBetweenBars + barWidth;
+                break;
+            case 3:
+                startPositions[0] = 0;
+                startPositions[1] = spaceAtSidesOfBar + barWidth + spaceBetweenBars/2 + 1;
+                startPositions[2] = startPositions[1] + spaceBetweenBars + barWidth;
+                break;
+            case 2:
+                startPositions[0] = 0;
+                startPositions[1] = spaceAtSidesOfBar + barWidth + spaceBetweenBars/2 + 1;
+                break;
+            case 1:
+                startPositions[0] = 0;
+                break;
+            default: break;
+        }
+        return startPositions;
     }
 }

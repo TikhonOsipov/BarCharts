@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -33,9 +34,19 @@ public class FragmentChart extends Fragment {
         int position = args.getInt("position", 0);
 
         Log.d("myLogs", getClass().getSimpleName() + ": position: " + position);
-        binding.text.setText(String.valueOf(position));
         binding.chart.setAccounts(App.get(getActivity()).getAccounts());
         binding.chart.draw(position);
+        binding.chart.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    //Log.d("myLogs", "x = " + motionEvent.getX() + "; barCount = " + binding.chart.getBarCount());
+                    Log.d("myLogs", "x = " + motionEvent.getX() + "; clicked = " + binding.chart.getClickedIndex(motionEvent.getX()));
+                    return true;
+                }
+                return false;
+            }
+        });
         return binding.getRoot();
     }
 }

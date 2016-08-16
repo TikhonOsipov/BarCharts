@@ -187,12 +187,6 @@ public class BarChart extends ImageView {
                 canvas.drawRect(rectF, p);
             }
 
-            /*if(accounts.get(i)) {
-                float totalHeight = (barHeight * ((Card) accounts.get(i)).getRemainedValue()) / accounts.get(i).getValue();
-                rectF.set(initWidth, bottomY - totalHeight, initWidth + barWidth, bottomY);
-                canvas.drawRect(rectF, linePaint);
-            }*/
-
             initWidth += barWidth;
             initWidth += spaceBetweenBars;
         }
@@ -418,41 +412,34 @@ public class BarChart extends ImageView {
 
     public int getClickedIndex(float x) {
         float[] startPositions = calculateStartPositions(barCount);
-        int clickedIndex = 0;
+        float[] endPositions = calculateEndPositions(barCount);
         for(int i = 0; i < startPositions.length; i++) {
-            if(startPositions[i] > x) {
-                return calculateGlobalIndex(i-1);
-            }
-            if((i == startPositions.length - 1) && (startPositions[i] < x)) {
+            if(x > startPositions[i] && x < endPositions[i]) {
                 return calculateGlobalIndex(i);
             }
         }
-        return calculateGlobalIndex(clickedIndex);
+        return -1;
     }
 
     private float[] calculateStartPositions(int barCount) {
         float[] startPositions = new float[barCount];
-        switch (barCount) {
-            case 4:
-                startPositions[0] = 0;
-                startPositions[1] = spaceAtSidesOfBar + barWidth + spaceBetweenBars/2 + 1;
-                startPositions[2] = startPositions[1] + spaceBetweenBars + barWidth;
-                startPositions[3] = startPositions[2] + spaceBetweenBars + barWidth;
-                break;
-            case 3:
-                startPositions[0] = 0;
-                startPositions[1] = spaceAtSidesOfBar + barWidth + spaceBetweenBars/2 + 1;
-                startPositions[2] = startPositions[1] + spaceBetweenBars + barWidth;
-                break;
-            case 2:
-                startPositions[0] = 0;
-                startPositions[1] = spaceAtSidesOfBar + barWidth + spaceBetweenBars/2 + 1;
-                break;
-            case 1:
-                startPositions[0] = 0;
-                break;
-            default: break;
+        startPositions[0] = spaceAtSidesOfBar;
+        if(startPositions.length > 1) {
+            for(int i = 1; i < startPositions.length; i++) {
+                startPositions[i] = startPositions[i-1] + barWidth + spaceBetweenBars;
+            }
         }
         return startPositions;
+    }
+
+    private float[] calculateEndPositions(int barCount) {
+        float[] endPositions = new float[barCount];
+        endPositions[0] = spaceAtSidesOfBar + barWidth;
+        if(endPositions.length > 1) {
+            for (int i = 1; i < endPositions.length; i++) {
+                endPositions[i] = endPositions[i-1] + spaceBetweenBars + barWidth;
+            }
+        }
+        return endPositions;
     }
 }

@@ -51,18 +51,15 @@ public class BarChart extends ImageView {
     private int pageNumber = 0;
 
     /**
-     * Data to be shown on the chart
-     */
-    private List<BaseAccount> accounts;
-
-    /**
      * Heights of bars that are calculated in
      * @see #calculateHeightsOfBars()
      */
     private List<Float> heights = new ArrayList<>();
 
-    public void setAccounts(List<BaseAccount> accounts) {
-        this.accounts = accounts;
+    private IBarChartAdapter adapter;
+
+    public void setAdapter(IBarChartAdapter adapter) {
+        this.adapter = adapter;
     }
 
     Paint p = new Paint();
@@ -140,7 +137,7 @@ public class BarChart extends ImageView {
      */
     public void draw(int pageNumber) {
         this.pageNumber = pageNumber;
-        this.barCount = calculateBarCountOnPage(accounts.size(), pageNumber);
+        this.barCount = calculateBarCountOnPage(adapter.getItemCount(), pageNumber);
         invalidate();
     }
 
@@ -154,8 +151,8 @@ public class BarChart extends ImageView {
         int bottomY = getHeight() - 2;
         for(int i = 0; i < barCount; i++) {
             int globalIndex = calculateGlobalIndex(i);
-            String title = accounts.get(globalIndex).getName();
-            String balance = accounts.get(globalIndex).getBalance();
+            String title = adapter.getName(globalIndex);
+            String balance = adapter.getBalance(globalIndex);
 
             float barHeight = heights.get(globalIndex);
 
@@ -172,15 +169,14 @@ public class BarChart extends ImageView {
             canvas.drawText(title, titleStartX, titleStartY, titlePaint);
             canvas.drawText(balance, valueStartX, valueStartY, valuePaint);
 
-            if(accounts.get(globalIndex) instanceof Card) {
+            if(adapter.get(globalIndex) instanceof Card) {
                 canvas.drawRect(rectF, linePaint);
-                float remainedValue = (float) ((Card) accounts.get(globalIndex)).getRemainedValue();
-                float totalValue = (float) accounts.get(globalIndex).getValue();
+                float remainedValue = (float) adapter.getRemainedValue(globalIndex);
+                float totalValue = (float) adapter.getTotalValue(globalIndex);
                 float remainedHeight = barHeight * remainedValue / totalValue;
-                //float remainedHeight = calculateHeightOfBar((int)remainedValue, findMinValue(), findMaxValue());
                 rectF.set(initWidth, bottomY - remainedHeight, initWidth + barWidth, bottomY);
                 canvas.drawRect(rectF, p);
-            } else if(accounts.get(globalIndex) instanceof Account) {
+            } else if(adapter.get(globalIndex) instanceof Account) {
                 canvas.drawRect(rectF, p);
             }
 
@@ -267,8 +263,8 @@ public class BarChart extends ImageView {
     private void calculateHeightsOfBars() {
         int minValue = findMinValue();
         int maxValue = findMaxValue();
-        for(int i = 0; i < accounts.size(); i++) {
-            int value = accounts.get(i).getValue();
+        for(int i = 0; i < adapter.getItemCount(); i++) {
+            int value = adapter.getTotalValue(i);
             float height = calculateHeightOfBar(value, minValue, maxValue);
             heights.add(height);
         }
@@ -294,11 +290,11 @@ public class BarChart extends ImageView {
      * @return minimal balance
      */
     private int findMinValue() {
-        int minValue = accounts.get(0).getValue();
-        if(accounts.size() > 1) {
-            for(int i = 1; i < accounts.size(); i++) {
-                if(accounts.get(i).getValue() <= minValue) {
-                    minValue = accounts.get(i).getValue();
+        int minValue = adapter.getTotalValue(0);
+        if(adapter.getItemCount() > 1) {
+            for(int i = 1; i < adapter.getItemCount(); i++) {
+                if(adapter.getTotalValue(i) <= minValue) {
+                    minValue = adapter.getTotalValue(i);
                 }
             }
         }
@@ -310,11 +306,11 @@ public class BarChart extends ImageView {
      * @return maximal balance
      */
     private int findMaxValue() {
-        int maxValue = accounts.get(0).getValue();
-        if(accounts.size() > 1) {
-            for(int i = 1; i < accounts.size(); i++) {
-                if(accounts.get(i).getValue() >= maxValue) {
-                    maxValue = accounts.get(i).getValue();
+        int maxValue = adapter.getTotalValue(0);
+        if(adapter.getItemCount() > 1) {
+            for(int i = 1; i < adapter.getItemCount(); i++) {
+                if(adapter.getTotalValue(i) >= maxValue) {
+                    maxValue = adapter.getTotalValue(i);
                 }
             }
         }

@@ -13,7 +13,7 @@
         <com.tixon.barchart.BarChart
             tools:background="#cccccc"
             android:id="@+id/chart"
-            android:background="@android:color/transparent"
+            android:background="#33ffffff"
             android:layout_width="match_parent"
             android:layout_height="@dimen/graphViewHeight" />
     </RelativeLayout>

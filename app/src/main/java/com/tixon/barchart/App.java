@@ -24,7 +24,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         accounts.add(new Account(500, "500 €", "Account 1"));
-        accounts.add(new Account(800, "800 €", "Account 2"));
+        accounts.add(new Account(-300, "-300 €", "Account 2"));
         accounts.add(new Account(1200, "1 200 €", "Account 3"));
         accounts.add(new Account(700, "700 €", "Account 4"));
         accounts.add(new Account(900, "900 €", "Account 5"));

@@ -157,7 +157,11 @@ public class BarChart extends ImageView {
 
             float barHeight = heights.get(globalIndex);
 
-            rectF.set(initWidth, bottomY - barHeight, initWidth + barWidth, bottomY);
+            if(barHeight >= 0) {
+                rectF.set(initWidth, bottomY - barHeight, initWidth + barWidth, bottomY);
+            } else {
+                rectF.set(initWidth, bottomY, initWidth + barWidth, bottomY - barHeight);
+            }
 
             float titleWidth = titlePaint.measureText(title);
             float valueWidth = valuePaint.measureText(balance);
@@ -266,7 +270,10 @@ public class BarChart extends ImageView {
         int maxValue = findMaxValue();
         for(int i = 0; i < adapter.getItemCount(); i++) {
             int value = adapter.getTotalValue(i);
-            float height = calculateHeightOfBar(value, minValue, maxValue);
+            float height = calculateHeightOfBar(Math.abs(value), minValue, maxValue);
+            if(value < 0) {
+                height *= -1;
+            }
             heights.add(height);
         }
     }
@@ -281,6 +288,10 @@ public class BarChart extends ImageView {
      */
     private float calculateHeightOfBar(int value, int minValue, int maxValue) {
         float minBarHeight = maxBarHeight / 4.0f;
+        //if Math.abs of negative value is < than calculated minimum positive value
+        if(value < minValue) {
+            return (float)value*minBarHeight/(float)minValue;
+        }
         float firstFraction = ((float)(value - maxValue)) / ((float)(minValue - maxValue));
         float secondFraction = ((float)(value - minValue)) / ((float)(maxValue - minValue));
         return minBarHeight * firstFraction + maxBarHeight * secondFraction;

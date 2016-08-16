@@ -8,13 +8,13 @@
         android:orientation="vertical"
         android:background="@android:color/transparent"
         android:layout_width="match_parent"
-        android:layout_height="160dp">
+        android:layout_height="@dimen/graphViewHeight">
 
         <com.tixon.barchart.BarChart
             tools:background="#cccccc"
             android:id="@+id/chart"
             android:background="@android:color/transparent"
             android:layout_width="match_parent"
-            android:layout_height="160dp" />
+            android:layout_height="@dimen/graphViewHeight" />
     </RelativeLayout>
 </layout>

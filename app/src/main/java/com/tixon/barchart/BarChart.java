@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class BarChart extends ImageView {
     private static final float WIDTH = 360.0f;
-    private static final float HEIGHT = 160.0f;
+    private static final float HEIGHT = 196.0f;
 
     private static final float WIDTH_TO_BAR_WIDTH_4 = WIDTH/64.0f;
     private static final float WIDTH_TO_BAR_WIDTH_3 = WIDTH/75.0f;
@@ -35,9 +35,10 @@ public class BarChart extends ImageView {
     private static final float WIDTH_TO_SPACE_SIDE_2 = WIDTH/64.0f;
     private static final float WIDTH_TO_SPACE_SIDE_1 = WIDTH/138.0f;
 
-    private static final float HEIGHT_TO_MAX_BAR_HEIGHT = 1.9f;
+    private static final float HEIGHT_TO_MAX_BAR_HEIGHT = HEIGHT/85.0f;
     private static final float HEIGHT_TO_SPACE_BETWEEN_VALUE_TEXT_VIEW = HEIGHT/16.0f;
     private static final float HEIGHT_TO_SPACE_BETWEEN_TITLE_TEXT_VIEW = HEIGHT/13.0f;
+    private static final float HEIGHT_TO_SPACE_BETWEEN_BOTTOM_AND_BASELINE = HEIGHT/36.0f;
 
     private static final String ROBOTO_LIGHT_PATH = "fonts/roboto_light.ttf";
     private static final String ROBOTO_REGULAR_PATH = "fonts/roboto_regular.ttf";
@@ -101,7 +102,7 @@ public class BarChart extends ImageView {
      * Draws bottom line of the chart
      */
     private void drawLine(Canvas canvas) {
-        int bottomY = getHeight() - 2;
+        int bottomY = getHeight() - getHeight()/(int)HEIGHT_TO_SPACE_BETWEEN_BOTTOM_AND_BASELINE;
 
         int startX = 0;
         int stopX = getWidth();
@@ -148,7 +149,7 @@ public class BarChart extends ImageView {
         calculateWidths(barCount);
         calculateHeightsOfBars();
         float initWidth = spaceAtSidesOfBar;
-        int bottomY = getHeight() - 2;
+        int bottomY = getHeight() - getHeight()/(int)HEIGHT_TO_SPACE_BETWEEN_BOTTOM_AND_BASELINE;
         for(int i = 0; i < barCount; i++) {
             int globalIndex = calculateGlobalIndex(i);
             String title = adapter.getName(globalIndex);
@@ -261,7 +262,7 @@ public class BarChart extends ImageView {
      * Adds calculated height for each bar in heights ArrayList< Float>
      */
     private void calculateHeightsOfBars() {
-        int minValue = findMinValue();
+        int minValue = findMinPositiveValue();
         int maxValue = findMaxValue();
         for(int i = 0; i < adapter.getItemCount(); i++) {
             int value = adapter.getTotalValue(i);
@@ -315,6 +316,22 @@ public class BarChart extends ImageView {
             }
         }
         return maxValue;
+    }
+
+    /**
+     * Finds minimal positive balance in accounts list
+     * @return minimal balance
+     */
+    private int findMinPositiveValue() {
+        int minValue = Integer.MAX_VALUE;
+        if(adapter.getItemCount() > 0) {
+            for(int i = 0; i < adapter.getItemCount(); i++) {
+                if((adapter.getTotalValue(i) < minValue) && (adapter.getTotalValue(i) >= 0)) {
+                    minValue = adapter.getTotalValue(i);
+                }
+            }
+        }
+        return minValue;
     }
 
     public int getClickedIndex(float x) {

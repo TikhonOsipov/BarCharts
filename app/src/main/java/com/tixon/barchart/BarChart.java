@@ -147,7 +147,8 @@ public class BarChart extends ImageView {
      */
     private void drawBars(Canvas canvas) {
         calculateWidths(barCount);
-        calculateHeightsOfBars();
+        //calculateHeightsOfBars();
+        calculateHeightsOfBars(pageNumber*4);
         float initWidth = spaceAtSidesOfBar;
         int bottomY = getHeight() - getHeight()/(int)HEIGHT_TO_SPACE_BETWEEN_BOTTOM_AND_BASELINE;
         for(int i = 0; i < barCount; i++) {
@@ -155,7 +156,8 @@ public class BarChart extends ImageView {
             String title = adapter.getName(globalIndex);
             String balance = adapter.getBalance(globalIndex);
 
-            float barHeight = heights.get(globalIndex);
+            //float barHeight = heights.get(globalIndex);
+            float barHeight = heights.get(i);
 
             if(barHeight >= 0) {
                 rectF.set(initWidth, bottomY - barHeight, initWidth + barWidth, bottomY);
@@ -268,6 +270,13 @@ public class BarChart extends ImageView {
     private void calculateHeightsOfBars() {
         int minValue = findMinPositiveValue();
         int maxValue = findMaxValue();
+        //if we have only one value, so draw maxBarHeight for positive
+        // or -1*(maxBarHeight/4) for negative.
+        if(adapter.getItemCount() == 1) {
+            calculateHeightOfSingleBarOnPage(0);
+            return;
+        }
+
         for(int i = 0; i < adapter.getItemCount(); i++) {
             int value = adapter.getTotalValue(i);
             float height = calculateHeightOfBar(Math.abs(value), minValue, maxValue);
@@ -275,6 +284,36 @@ public class BarChart extends ImageView {
                 height *= -1;
             }
             heights.add(height);
+        }
+    }
+
+    private void calculateHeightsOfBars(int startIndex) {
+        int minValue = findMinPositiveValue(startIndex);
+        int maxValue = findMaxValue(startIndex);
+        //if we have only one value, so draw maxBarHeight for positive
+        // or -1*(maxBarHeight/4) for negative.
+        if(barCount == 1) {
+            calculateHeightOfSingleBarOnPage(startIndex);
+            return;
+        }
+        for(int i = startIndex; i < startIndex+barCount; i++) {
+            int value = adapter.getTotalValue(i);
+            float height = calculateHeightOfBar(Math.abs(value), minValue, maxValue);
+            if(value < 0) {
+                height *= -1;
+            }
+            heights.add(height);
+        }
+    }
+
+    private void calculateHeightOfSingleBarOnPage(int index) {
+        if(adapter.getTotalValue(index) > 0) {
+            heights.add(maxBarHeight);
+        } else if(adapter.getTotalValue(index) == 0) {
+            heights.add(0.0f);
+        }
+        else {
+            heights.add(-maxBarHeight/4.0f);
         }
     }
 
@@ -330,6 +369,22 @@ public class BarChart extends ImageView {
     }
 
     /**
+     * Finds maximal balance in accounts list from specified start index
+     * @return maximal balance
+     */
+    private int findMaxValue(int startIndex) {
+        int maxValue = adapter.getTotalValue(startIndex);
+        if(barCount > 1) {
+            for(int i = startIndex+1; i < startIndex+barCount; i++) {
+                if(adapter.getTotalValue(i) >= maxValue) {
+                    maxValue = adapter.getTotalValue(i);
+                }
+            }
+        }
+        return maxValue;
+    }
+
+    /**
      * Finds minimal positive balance in accounts list
      * @return minimal balance
      */
@@ -337,6 +392,22 @@ public class BarChart extends ImageView {
         int minValue = Integer.MAX_VALUE;
         if(adapter.getItemCount() > 0) {
             for(int i = 0; i < adapter.getItemCount(); i++) {
+                if((adapter.getTotalValue(i) < minValue) && (adapter.getTotalValue(i) >= 0)) {
+                    minValue = adapter.getTotalValue(i);
+                }
+            }
+        }
+        return minValue;
+    }
+
+    /**
+     * Finds minimal positive balance in accounts list from specified start index
+     * @return minimal balance
+     */
+    private int findMinPositiveValue(int startIndex) {
+        int minValue = Integer.MAX_VALUE;
+        if(adapter.getItemCount() > 0) {
+            for(int i = startIndex; i < startIndex+barCount; i++) {
                 if((adapter.getTotalValue(i) < minValue) && (adapter.getTotalValue(i) >= 0)) {
                     minValue = adapter.getTotalValue(i);
                 }

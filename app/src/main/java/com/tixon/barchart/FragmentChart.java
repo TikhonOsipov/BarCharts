@@ -5,6 +5,7 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,16 +37,50 @@ public class FragmentChart extends Fragment {
         Log.d("myLogs", getClass().getSimpleName() + ": position: " + position);
         binding.chart.setAdapter(new BarChartAdapter(App.get(getActivity()).getAccounts()));
         binding.chart.draw(position);
-        binding.chart.setOnTouchListener(new View.OnTouchListener() {
+        /*binding.chart.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN && motionEvent.getAction() != MotionEvent.ACTION_MOVE) {
                     Log.d("myLogs", "x = " + motionEvent.getX() + "; clicked = " + binding.chart.getClickedIndex(motionEvent.getX()));
                     return true;
                 }
                 return false;
             }
+        });*/
+
+        final TapGestureListener tapGestureListener = new TapGestureListener();
+        final GestureDetector gestureDetector = new GestureDetector(getActivity(), tapGestureListener);
+
+        binding.chart.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return tapGestureListener.onSingleTapConfirmed(motionEvent);
+            }
         });
         return binding.getRoot();
+    }
+
+    class TapGestureListener extends GestureDetector.SimpleOnGestureListener {
+        boolean moved = false;
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            System.out.println("hello");
+            if (e.getAction() == MotionEvent.ACTION_DOWN) {
+                moved = false;
+                //viewPager.performClick();
+                System.out.println("clicked ACTION_DOWN");
+            }
+            if (e.getAction() == MotionEvent.ACTION_MOVE) {
+                System.out.println("clicked ACTION_MOVE");
+                moved = true;
+            }
+            if (e.getAction() == MotionEvent.ACTION_UP) {
+                if (!moved) {
+                    System.out.println("clicked ACTION_UP");
+
+                }
+            }
+            return false;
+        }
     }
 }
